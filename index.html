@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Gestión Farmacéutico</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+
+<nav class="navbar navbar-dark bg-primary mb-4">
+    <div class="container">
+        <span class="navbar-brand mb-0 h1">💊 Sistema de Gestión Farmacéutico - Punto de Venta</span>
+        <span class="navbar-text text-white">Usuario: Vendedor_01</span>
+    </div>
+</nav>
+
+<div class="container">
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card shadow-sm mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">Buscar Medicamento</h5>
+                    <div class="input-group mb-3">
+                        <input type="text" class="form-control" placeholder="Ej. Paracetamol, Diazepam..." id="inputMedicamento">
+                        <button class="btn btn-outline-secondary" type="button" onclick="agregarNormal()">Agregar Común</button>
+                        <button class="btn btn-danger" type="button" onclick="intentarAgregarControlado()">Agregar Psicotrópico</button>
+                    </div>
+
+                    <h5 class="card-title mt-4">Carrito de Compras</h5>
+                    <table class="table table-hover">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Cód</th>
+                                <th>Medicamento</th>
+                                <th>Cant.</th>
+                                <th>Subtotal</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tablaCarrito">
+                            </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card shadow-sm">
+                <div class="card-body text-center">
+                    <h5 class="card-title">Total a Pagar</h5>
+                    <h2 class="text-success my-4" id="totalPagar">$0.00</h2>
+                    <div class="d-grid gap-2">
+                        <button class="btn btn-success btn-lg" onclick="facturarSRI()">Confirmar y Facturar (SRI)</button>
+                        <button class="btn btn-outline-danger" onclick="limpiarCarrito()">Cancelar Venta</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="modalReceta" data-bs-backdrop="static" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content border-danger">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title">⚠️ ALERTA: Medicamento Controlado</h5>
+            </div>
+            <div class="modal-body">
+                <p>Está intentando vender <strong>Diazepam 5mg</strong>. Según la normativa de ARCSA, debe registrar la receta obligatoriamente.</p>
+                <div class="mb-3">
+                    <label class="form-label">Registro Médico (MSP)</label>
+                    <input type="text" class="form-control" id="regMedico" placeholder="Ej. 1234-MSP">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Nombre del Paciente</label>
+                    <input type="text" class="form-control" id="nomPaciente" placeholder="Nombre completo">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar Ítem</button>
+                <button type="button" class="btn btn-danger" onclick="validarYRetener()">Validar y Retener Receta</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    let total = 0;
+    const modal = new bootstrap.Modal(document.getElementById('modalReceta'));
+
+    function agregarNormal() {
+        document.getElementById('tablaCarrito').innerHTML += `<tr><td>001</td><td>Paracetamol 500mg</td><td>1</td><td>$1.50</td></tr>`;
+        actualizarTotal(1.50);
+    }
+
+    function intentarAgregarControlado() {
+        // Al intentar agregar psicotrópico, salta la alerta Min-Min
+        modal.show();
+    }
+
+    function validarYRetener() {
+        let medico = document.getElementById('regMedico').value;
+        let paciente = document.getElementById('nomPaciente').value;
+        
+        if(medico === "" || paciente === "") {
+            alert("Error: Debe llenar todos los datos de la receta para continuar.");
+            return;
+        }
+        
+        // Si llena los datos, pasa la validación y se agrega al carrito
+        document.getElementById('tablaCarrito').innerHTML += `<tr class="table-warning"><td>045</td><td>Diazepam 5mg (Controlado)</td><td>1</td><td>$5.00</td></tr>`;
+        actualizarTotal(5.00);
+        modal.hide();
+        document.getElementById('regMedico').value = "";
+        document.getElementById('nomPaciente').value = "";
+    }
+
+    function actualizarTotal(monto) {
+        total += monto;
+        document.getElementById('totalPagar').innerText = "$" + total.toFixed(2);
+    }
+
+    function limpiarCarrito() {
+        document.getElementById('tablaCarrito').innerHTML = "";
+        total = 0;
+        actualizarTotal(0);
+    }
+
+    function facturarSRI() {
+        if(total === 0) {
+            alert("El carrito está vacío.");
+            return;
+        }
+        // Simulación de conexión exitosa con el SRI
+        alert("✅ Venta procesada exitosamente.\n\nEl archivo XML fue enviado.\nAutorización SRI: 09283471029384719283\n\nImprimiendo RIDE...");
+        limpiarCarrito();
+    }
+</script>
+</body>
+</html>
